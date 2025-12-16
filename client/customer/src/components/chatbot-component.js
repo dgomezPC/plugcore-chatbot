@@ -2,49 +2,20 @@ class ChatBot extends HTMLElement {
   constructor () {
     super()
     this.shadow = this.attachShadow({ mode: 'open' })
-    this.socket = new WebSocket(import.meta.env.VITE_WS_URL)
     this.threadId = null
     this.isOpen = false
     this.isTyping = false
     this.escalateToHuman = false
     this.pendingFile = null
-    this.socketReady = false
   }
 
   connectedCallback () {
-    this.socket.addEventListener('open', () => {
-      this.socketReady = true
-      if (sessionStorage.getItem('threadId')) this.wsSubscribe(sessionStorage.getItem('threadId'))
-    })
-
-    this.socket.addEventListener('message', event => {
-      const { channel, data } = JSON.parse(event.data)
-      if (this.threadId && channel === this.threadId) {
-        const sendButton = this.shadow.querySelector('.send-button')
-        const container = this.createHumanResponseContainer()
-        this.writeNewAnswer(data.message, container, true)
-        this.isTyping = false
-        sendButton.disabled = false
-      }
-    })
-
-    this.socket.addEventListener('close', () => { this.socketReady = false })
-    this.socket.addEventListener('error', () => { this.socketReady = false })
-
     if (sessionStorage.getItem('threadId')) {
       this.loadData()
     }
 
     this.render()
   }
-
-  wsSend (obj) {
-    if (!this.socketReady) return
-    this.socket.send(JSON.stringify(obj))
-  }
-
-  wsSubscribe (channel) { this.wsSend({ type: 'subscribe', channel }) }
-  wsUnsubscribe (channel) { this.wsSend({ type: 'unsubscribe', channel }) }
 
   loadData = async () => {
     try {
@@ -508,9 +479,6 @@ class ChatBot extends HTMLElement {
     sessionStorage.setItem('threadId', this.threadId)
     sessionStorage.setItem('escalateToHuman', this.escalateToHuman)
 
-    if (this.socketReady && this.escalateToHuman) {
-      this.wsSubscribe(this.threadId)
-    }
     console.log(data.answer)
     return data.answer
   }
