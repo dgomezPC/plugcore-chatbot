@@ -3,9 +3,7 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 const app = express();
 
 const options = {
-
   target: 'http://127.0.0.1:8080', 
-  cookieDomainRewrite: 'dev-youthing.com', 
   changeOrigin: true,
   logLevel: 'debug',
   onProxyReq: function(proxyReq, req, res) {
@@ -22,4 +20,11 @@ app.use('/api', createProxyMiddleware(options));
 options.target = 'http://localhost:5177';
 app.use('/', createProxyMiddleware(options));
 
-app.listen(80, '127.0.0.1');
+app.listen(80, '127.0.0.1', () => {
+  console.log('\n===========================================');
+  console.log('✅ PROXY CORRIENDO CORRECTAMENTE');
+  console.log('===========================================');
+  console.log('👉 Accede al chatbot en: http://localhost/');
+  console.log('❌ NO uses: http://localhost:5177/');
+  console.log('===========================================\n');
+});

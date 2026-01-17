@@ -1,15 +1,20 @@
 const express = require('express')
 const app = express()
-const errorHandler = require('./middlewares/error-handler')
-const userAgentMiddleware = require('./middlewares/user-agent')
-const userTrackingMiddleware = require('./middlewares/user-tracking')
 const routes = require('./routes')
 
-app.use(express.json({ limit: '10mb', extended: true }))
-app.use(userAgentMiddleware)
-app.use(userTrackingMiddleware)
+// Middleware básico para parsear JSON
+app.use(express.json({ limit: '10mb' }))
 
+// Rutas
 app.use('/api', routes)
-app.use(errorHandler)
+
+// Manejo de errores básico
+app.use((err, req, res, next) => {
+  console.error('Error:', err)
+  res.status(500).json({
+    message: 'Error interno del servidor',
+    error: err.message
+  })
+})
 
 module.exports = app
